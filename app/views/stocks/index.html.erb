@@ -1,0 +1,5 @@
+<% @hot_stocks.each do |stock| %>
+  <%= image_tag "http://chart.finance.yahoo.com/t?s=#{stock[:symbol]}&width=300&height=180" %>
+  <br />
+  <%= stock.to_json %>
+<% end %>
