@@ -1,12 +1,12 @@
 class StocksController < ApplicationController
   HOT_STOCKS = %w{ T39.SI S68.SI Z74.SI CC3.SI B2F.SI U11.SI O39.SI D05.SI C6L.SI F99.SI }
-  DATA_MAPPING = [:symbol, :name, :last_trade_price, :last_trade_date, :last_trade_time, :open, :high, :low, :dividend_per_share, :pe_ratio]
+  DATA_MAPPING = [:symbol, :name, :last_trade_rt, :last_trade_price, :change, :change_rt, :change_pc_rt, :last_trade_date, :last_trade_time, :open, :high, :low, :dividend_per_share, :pe_ratio, :ask, :bid, :ask_rt, :bid_rt]
 
   def index
     @hot_stocks = []
     hydra = Typhoeus::Hydra.new
     HOT_STOCKS.each do |stock_symbol|
-      request = Typhoeus::Request.new "http://finance.yahoo.com/d/quotes.csv?s=#{stock_symbol}&f=snl1d1t1ohgdr", method: :get, followlocation: true
+      request = Typhoeus::Request.new "http://finance.yahoo.com/d/quotes.csv?s=#{stock_symbol}&f=snk1l1cc6k2d1t1ohgdrabb2b3", method: :get, followlocation: true
       request.on_complete do |response|
         if response.success?
           if response.success?
