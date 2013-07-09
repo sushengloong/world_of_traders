@@ -95,7 +95,9 @@ module YahooFinanceClient
           news_request = Typhoeus::Request.new "http://feeds.finance.yahoo.com/rss/2.0/headline?s=#{stock_symbol}&region=SG&lang=en-SG", method: :get, followlocation: true
           news_request.on_complete do |news_response|
             if response.success?
-              stock[:news_feed] = news_response.body
+              stock[:news_feed] = Feedzirra::Feed.parse(news_response.body).entries.map do |entry|
+                { news_title: entry.title, news_url: entry.url, news_published: entry.published }
+              end
             end
           end
           hydra.queue news_request
