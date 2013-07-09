@@ -77,36 +77,45 @@ module YahooFinanceClient
   }
 
   def self.sti_components
-    hot_stocks = []
+    sti_components = []
     hydra = Typhoeus::Hydra.new
     STI_COMPONENTS.each do |stock_symbol|
       request = Typhoeus::Request.new "http://finance.yahoo.com/d/quotes.csv?s=#{stock_symbol}&f=#{YAHOO_DATA_MAPPING.keys.join}", method: :get, followlocation: true
       request.on_complete do |response|
         if response.success?
-          if response.success?
-            response_data = response.body.split(',').map { |d| d.strip.chomp.gsub '"', '' }
-            hot_stocks << response_data.inject({}) do |stocks, col|
-              stocks.tap do |s|
-                key = YAHOO_DATA_MAPPING.keys[s.length]
-                s[YAHOO_DATA_MAPPING[key][0].to_sym] = col
-              end
+          response_data = response.body.split(',').map { |d| d.strip.chomp.gsub '"', '' }
+          stock = response_data.inject({}) do |stocks, col|
+            stocks.tap do |s|
+              key = YAHOO_DATA_MAPPING.keys[s.length]
+              s[YAHOO_DATA_MAPPING[key][0].to_sym] = col
             end
-          elsif response.timed_out?
-            # aw hell no
-            "got a time out"
-          elsif response.code == 0
-            # Could not get an http response, something's wrong.
-            response.curl_error_message
-          else
-            # Received a non-successful http response.
-            "HTTP request failed: " + response.code.to_s
           end
+
+          # if success, request for news feed
+          news_request = Typhoeus::Request.new "http://feeds.finance.yahoo.com/rss/2.0/headline?s=#{stock_symbol}&region=SG&lang=en-SG", method: :get, followlocation: true
+          news_request.on_complete do |news_response|
+            if response.success?
+              stock[:news_feed] = news_response.body
+            end
+          end
+          hydra.queue news_request
+
+          sti_components << stock
+        elsif response.timed_out?
+          # aw hell no
+          "got a time out"
+        elsif response.code == 0
+          # Could not get an http response, something's wrong.
+          response.curl_error_message
+        else
+          # Received a non-successful http response.
+          "HTTP request failed: " + response.code.to_s
         end
       end
       hydra.queue request
     end
     hydra.run
-    hot_stocks.sort_by! { |x| x[:symbol] }
-    hot_stocks
+    sti_components.sort_by! { |x| x[:symbol] }
+    sti_components
   end
 end
