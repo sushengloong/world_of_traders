@@ -1,5 +1,5 @@
 class StocksController < ApplicationController
-  HOT_STOCKS = %w{ T39.SI S68.SI Z74.SI CC3.SI B2F.SI U11.SI O39.SI D05.SI C6L.SI F99.SI }
+  STI_COMPONENTS = %w{ BN4.SI, C07.SI, C09.SI, C31.SI, C38U.SI, C52.SI, C6L.SI, CC3.SI, D05.SI, E5H.SI, F34.SI, G13.SI, H78.SI, J36.SI, J37.SI, JS8.SI, MC0.SI, N21.SI, NS8U.SI, O32.SI, O39.SI, Q0F.SI, S51.SI, S59.SI, S63.SI, S68.SI, T39.SI, U11.SI, U96.SI, Z74.SI }
 
   YAHOO_DATA_MAPPING = {
     "s" => [ "symbol", "val" ],
@@ -79,7 +79,7 @@ class StocksController < ApplicationController
   def index
     @hot_stocks = []
     hydra = Typhoeus::Hydra.new
-    HOT_STOCKS.each do |stock_symbol|
+    STI_COMPONENTS.each do |stock_symbol|
       request = Typhoeus::Request.new "http://finance.yahoo.com/d/quotes.csv?s=#{stock_symbol}&f=#{YAHOO_DATA_MAPPING.keys.join}", method: :get, followlocation: true
       request.on_complete do |response|
         if response.success?
